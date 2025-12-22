@@ -51,13 +51,15 @@ public class EmployeeService {
     }
 
     public void deleteEmployee(Long employeeId) {
+
         Employee emp = employeeRepo.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        if (emp.getWorkload() != null && emp.getWorkload() > 0) {
-            throw new RuntimeException("Cannot delete employee with active tasks");
+        if (taskRepo.existsByAssignedEmployee(emp)) {
+            throw new RuntimeException("Cannot delete employee with assigned tasks");
         }
 
-        employeeRepo.deleteById(employeeId);
+        employeeRepo.delete(emp);
     }
+
 }

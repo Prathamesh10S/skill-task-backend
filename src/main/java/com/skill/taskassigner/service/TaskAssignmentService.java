@@ -60,13 +60,33 @@ public class TaskAssignmentService {
             throw new RuntimeException("Task already completed");
         }
 
-        if ("COMPLETED".equals(newStatus) && task.getAssignedEmployee() != null) {
+        if ("COMPLETED".equals(newStatus)) {
             Employee emp = task.getAssignedEmployee();
-            emp.setWorkload(Math.max(0, emp.getWorkload() - 1));
-            employeeRepo.save(emp);
+
+            if (emp != null) {
+                emp.setWorkload(Math.max(0, emp.getWorkload() - 1));
+                employeeRepo.save(emp);
+            }
+
+            // 🔥 CRITICAL FIX
+            task.setAssignedEmployee(null);
         }
 
         task.setStatus(newStatus);
         return taskRepo.save(task);
     }
+
+    @Transactional
+    public void deleteTask(Long taskId) {
+
+        Task task = taskRepo.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if ("ASSIGNED".equals(task.getStatus()) || "IN_PROGRESS".equals(task.getStatus())) {
+            throw new RuntimeException("Cannot delete active task");
+        }
+
+        taskRepo.delete(task);
+    }
+
 }

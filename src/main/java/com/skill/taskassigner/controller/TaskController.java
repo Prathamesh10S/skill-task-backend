@@ -55,4 +55,15 @@ public class TaskController {
     public List<Task> getAllTasks() {
         return taskRepo.findAll();
     }
+
+    @DeleteMapping("/{taskId}")
+    public String deleteTask(
+            @RequestHeader(value = "X-ADMIN-KEY", required = false) String adminKey,
+            @PathVariable Long taskId
+    ) {
+        adminAuth.checkAdmin(adminKey);
+        service.deleteTask(taskId);
+        return "Task deleted successfully";
+    }
+
 }
